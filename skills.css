@@ -1,0 +1,196 @@
+@import url(https://fonts.googleapis.com/css?family=Fondamento);
+/*@import url(https://fonts.googleapis.com/css?family=Quintessential);*/
+
+*
+{
+    box-sizing: border-box;
+}
+
+body
+{
+    margin: 0px;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+}
+
+.row
+{
+    width: 100%;
+    margin: -5px;
+}
+.row > *
+{
+    float: left;
+    margin: 5px;
+}
+
+.skill-popup
+{
+    color: white;
+    /*font: 1.29em Palatino Linotype, FPL Neu, TeX Gyre Pagella, Palatino, Book Antiqua, serif;*/
+    font: bold 1.26em Palatino Linotype, FPL Neu, TeX Gyre Pagella, Palatino, Book Antiqua, serif;
+    line-height: 1;
+    
+    box-sizing: border-box;
+    width: 251px;
+    border: 1px solid #C2C2C2;
+    padding: 10px 19px;
+    background-color: rgba(0,0,0, 0.7);
+    /*background-image: url("popupSample.png");*/  
+}
+
+.skill-popup p, .skill-popup dd
+{
+    line-height: 0.84;
+    margin-top: 0.08em;
+    margin-bottom: 0.08em;
+}
+
+.skill-popup dl
+{
+    margin: 0;
+}
+.skill-popup dt
+{
+    color: #A9A9FA;
+    /*line-height: 1;*/
+}
+.skill-popup dd
+{
+    margin-left: 0.65em;
+}
+
+.skill-popup header.skill-name
+{
+    font-weight: normal;
+    line-height: 1;
+    display: block;
+}
+
+.skill-popup > p:last-child
+{
+    margin-top: 0.25em;
+    margin-bottom: 0;
+}
+
+.level-num
+{
+    color: #FFDEDE;
+    fill: currentColor;
+}
+.level-num:not(canvas):not(svg)
+{
+    /*shadow outline*/
+    text-shadow: -1px -1px 0 black,  
+                  1px -1px 0 black,
+                 -1px  1px 0 black,
+                  1px  1px 0 black;
+}
+svg.level-num
+{
+    overflow: visible;
+    position: relative;
+}
+
+.tree-rank
+{
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    background-color: #5E2923;
+    text-align: center;
+    
+    border: 4px solid #F7F7F7;
+    border-radius: 1000px;
+}
+.tree-rank > .level-num
+{
+    font-size: 14px;
+    font-weight: bold;
+}
+.tree-rank > canvas.level-num,
+.tree-rank > svg.level-num
+{
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.tree-rank > svg.level-num
+{
+    left: 5px;
+    bottom: 2px;
+}
+
+header.skill-name, .tree-rank > .level-num
+{
+    /*font-family: Matura MT Script Capitals;*/
+    
+    font-family: Fondamento;
+    transform-origin: left;
+    transform: scale(0.9, 1);
+    
+    /*font-family: Quintessential;*/
+}
+
+/*#aladin header.skill-name, #aladin .tree-rank
+{
+    font-family: Aladin;
+}
+#berkshire-swash header.skill-name, #berkshire-swash .tree-rank
+{
+    font-family: Berkshire Swash;
+}
+#caveat-brush header.skill-name, #caveat-brush .tree-rank
+{
+    font-family: Caveat Brush;
+}
+#eagle-lake header.skill-name, #eagle-lake .tree-rank
+{
+    font-family: Eagle Lake;
+    font-size: 0.85em;
+    letter-spacing: -0.1em;
+}
+#fondamento header.skill-name, #fondamento .tree-rank
+{
+    font-family: Fondamento;
+    transform-origin: left;
+    transform: scale(0.9, 1);
+}
+#julee header.skill-name, #julee .tree-rank
+{
+    font-family: Julee;
+}
+#kaushan-script header.skill-name, #kaushan-script .tree-rank
+{
+    font-family: Kaushan Script;
+}
+#merienda-one header.skill-name, #merienda-one .tree-rank
+{
+    font-family: Merienda One;
+    font-size: 0.9em;
+}
+#merienda-400 header.skill-name, #merienda-400 .tree-rank
+{
+    font-family: Merienda;
+    font-size: 0.9em;
+}
+#merienda-700 header.skill-name, #merienda-700 .tree-rank
+{
+    font-family: Merienda;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+#quintessential header.skill-name, #quintessential .tree-rank
+{
+    font-family: Quintessential;
+}
+#rancho header.skill-name, #rancho .tree-rank
+{
+    font-family: Rancho;
+}
+#redressed header.skill-name, #redressed .tree-rank
+{
+    font-family: Redressed;
+}*/
