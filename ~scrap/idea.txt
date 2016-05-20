@@ -1,0 +1,7 @@
+Use What Ability?
+Unlocked Abilities
+Abilites and Pass
+ites and Passives
+
+
+Locked abilities display at 40% opacity on abilities screen.
