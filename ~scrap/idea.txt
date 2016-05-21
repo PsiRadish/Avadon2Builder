@@ -5,3 +5,10 @@ ites and Passives
 
 
 Locked abilities display at 40% opacity on abilities screen.
+
+
+• SkillTree instance stores levels for each skill.
+• Whenever a skill level changes, call getTextForLevel(newLevel) on all relevant abilities and update
+  ability tooltip markup with the new text data.
+
+• Store Skill objects in an array for each class, with a consistent order such that they can be correctly placed on the tree by index.
