@@ -14,7 +14,7 @@ Object.defineProperty(window, 'MAXPOINTS',
 var State =
 {
     pointsSpent: 0,
-    
+    tree: new SkillTree()
 }
 // State.pointsAvailable
 Object.defineProperty(State, 'pointsAvailable',
@@ -25,3 +25,4 @@ Object.defineProperty(State, 'pointsAvailable',
     },
     enumerable: true
 });
+
