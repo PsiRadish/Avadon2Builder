@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+</head>
+<body>
+
+<!-- This is a *view* - HTML markup that defines the appearance of your UI -->
+
+<p>First name: <strong data-bind="text: firstName">todo</strong></p>
+<p>Last name: <strong data-bind="text: lastName">todo</strong></p>
+
+<p>Full name: <strong data-bind="text: fullName"></strong></p>
+
+<p>First name: <input data-bind="value: firstName" /></p>
+<p>Last name: <input data-bind="value: lastName" /></p>
+
+<button data-bind="click: capitalizeLastName">Go caps</button>
+
+<div data-bind="with: robot">
+<pre data-bind="text: ko.toJSON($data, null, 4)"></pre>
+<pre data-bind="text: $data"></pre>
+<p>First name: <strong data-bind="text: nuts">todo</strong></p>
+<p data-bind="with: bolts">Last name: <strong data-bind="text: number">todo</strong></p>
+<!-- <numberp params="with: bolts"></numberp> -->
+<!-- ko with: bolts -->
+<numberp></numberp>
+<!-- /ko -->
+</div>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+<script>
+// This is a simple *viewmodel* - JavaScript that defines the data and behavior of your UI
+function AppViewModel()
+{
+    this.firstName = ko.observable("Bert");
+    this.lastName = ko.observable("Bertington");
+    this.robot = ko.observable({nuts: 5, bolts: {number: 6}});
+    
+    this.fullName = ko.computed(function()
+    {
+        return this.firstName() + " " + this.lastName();
+    }, this);
+    
+    this.capitalizeLastName = function()
+    {
+        var currentVal = this.lastName();        // Read the current value
+        this.lastName(currentVal.toUpperCase()); // Write back a modified value
+    };
+}
+
+ko.components.register('numberp',
+{
+    viewModel: function(params)
+    {
+        // Data: value is either null, 'like', or 'dislike'
+        this.with = params.with;
+         
+        // Behaviors
+        this.like = function() { this.chosenValue('like'); }.bind(this);
+        this.dislike = function() { this.chosenValue('dislike'); }.bind(this);
+    },
+    template:
+        '<div data-bind="with: $parent"><p>Last name: <strong data-bind="text: number">todo</strong></p></div>'
+});
+
+// Activates knockout.js
+ko.applyBindings(new AppViewModel());
+</script>
+
+</body>
+</html>

@@ -1,3 +1,21 @@
+
+/**
+ * Global constants
+ */
+// MAXPOINTS
+Object.defineProperty(window, 'MAXPOINTS',
+{
+    value: 58,
+    writable: false
+});
+// MAXSPECIALIZATION
+Object.defineProperty(window, 'MAXSPECIALIZATION',
+{
+    value: 3,
+    writable: false
+});
+
+
 // temp placeholder vars
 var __MANA_COST__ = 0;
 var __COOLDOWN__ = 0;
@@ -24,6 +42,8 @@ if (!String.format)
 function TreeNode()
 {
     this._skill = null;
+    this.icon = null;
+    
     this.level = 0;
     
     this.specMod = 0;
@@ -32,8 +52,32 @@ function TreeNode()
     this._directAncestors = [];
     this._directDescendants = [];
 }
-// Property: Level
-Object.defineProperty(TreeNode.prototype, 'Level',
+// Property: skill
+Object.defineProperty(TreeNode.prototype, 'skill',
+{
+    get: function()
+    {
+        return this._skill;
+    },
+    set: function(newSkill)
+    {
+        this._skill = newSkill;
+        this.icon = newSkill.icon;
+        this.level = newSkill.minLevel;
+    }
+    enumerable: true
+});
+// Property: isSpecNode
+Object.defineProperty(TreeNode.prototype, 'isSpecNode',
+{
+    get: function()
+    {
+        return !this._skill;
+    },
+    enumerable: true
+});
+// Property: moddedLevel
+Object.defineProperty(TreeNode.prototype, 'moddedLevel',
 {
     get: function()
     {
@@ -46,6 +90,11 @@ Object.defineProperty(TreeNode.prototype, 'thisLevelCost',
 {
     get: function()
     {
+        if (this.isSpecNode) // specialization node
+        {
+            return (this.level == 0) ? 0 : 1;
+        }
+        
         if (this.level == this.skill.minLevel)
             return 0;
         
@@ -58,22 +107,18 @@ Object.defineProperty(TreeNode.prototype, 'nextLevelCost',
 {
     get: function()
     {
+        if (this.isSpecNode) // specialization node
+        {
+            if (this.level + 1 > MAXSPECIALIZATION)
+                return Number.POSITIVE_INFINITY;
+            
+            return 1;
+        }
+        
         if (this.level + 1 > this.skill.maxLevel)
             return Number.POSITIVE_INFINITY;
         
         return this.skill.levelCosts[this.level + 1];
-    },
-    enumerable: true
-});
-// Property: thisLevelCost
-Object.defineProperty(TreeNode.prototype, 'thisLevelCost',
-{
-    get: function()
-    {
-        if (this.level == this.skill.minLevel)
-            return 0;
-        
-        return this.skill.levelCosts[this.level];
     },
     enumerable: true
 });
@@ -103,6 +148,11 @@ TreeNode.prototype.increaseOkay = function()
 {
     var newLevel = this.level + 1;
     
+    if (this.isSpecNode) // specialization node
+    {
+        return !(newLevel > MAXSPECIALIZATION);
+    }
+    
     if (newLevel > this.skill.maxLevel)
         return false;
     
@@ -114,6 +164,11 @@ TreeNode.prototype.increaseOkay = function()
 TreeNode.prototype.decreaseOkay = function()
 {
     var newLevel = this.level - 1;
+    
+    if (this.isSpecNode) // specialization node
+    {
+        return !(newLevel < 0);
+    }
     
     if (newLevel < this.skill.minLevel)
         return false;
@@ -134,6 +189,13 @@ function SkillTree()
     this.Utility =  [new TreeNode(), new TreeNode(), new TreeNode()];
     this.Master  =  [new TreeNode(), new TreeNode()];
     this.Orphan  =  [new TreeNode(), new TreeNode()];
+    
+    this.Specializations =
+    {
+        Battle: new TreeNode(),
+        Power: new TreeNode(),
+        Utility: new TreeNode()
+    }
     
     // Define bi-directional node relationships
     this.Battle[0]._directDescendants   = [ this.Battle[1], this.Power[1] ];
@@ -176,6 +238,10 @@ SkillTree.prototype.init = function(skills)
     
     this.Orphan[0].skill = skills[11];
     this.Orphan[1].skill = skills[12];
+    
+    this.Specializations.Battle.icon = this.Battle[0].skill.icon;
+    this.Specializations.Power.icon = this.Power[0].skill.icon;
+    this.Specializations.Utility.icon = this.Utility[0].skill.icon;
 }
 
 /**
@@ -351,16 +417,53 @@ Effect.prototype.getInfoForLevel = function(level)
 
 ////// POPULATE GAME DATA
 
-// var Avadon2 = {};
+/*
+Battle Specialization
+Each level of battle specialization increases the three skills in the left column by one.
+These skills tend to involve directly damaging your foes.
 
-////// SKILLS
-var Skills =
+Power Specialization
+Each level of power specialization increases the three skills in the center column by one.
+These skills tend to make your other attacks more effective and protect you from enemy attacks.
+
+Utility Specialization
+Each level of utility specialization increases the three skills in the right column by one.
+These skills tend to bless or cure your allies, curse your enemies, or do other generally useful things.
+*/
+
+////// CLASSES
+var Classes =
 {
-    Blade:  [],
-    Shadow: [],
-    Shaman: [],
-    Sorc:   [],
-    Tinker: []    
+    Blade:
+    {
+        name: "Blademaster",
+        dollImg: "class-dolls-tinker",
+        skills: []
+    },
+    Shadow:
+    {
+        name: "Shadowwalker"
+        dollImg: "class-dolls-tinker",
+        skills: []
+    },
+    Shaman:
+    {
+        name: "Shaman"
+        dollImg: "class-dolls-tinker",
+        skills: []
+    },
+    Sorc:
+    {
+        name: "Sorcerer"
+        dollImg: "class-dolls-tinker",
+        skills: []
+    },
+    Tinker:
+    {
+        name: "Tinker"
+        dollImg: "class-dolls-tinker",
+        skills: []
+    }
 };
 
 // enclose to avoid cluttering global scope with temp vars
@@ -400,7 +503,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -431,7 +534,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -474,7 +577,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -502,7 +605,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -537,7 +640,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -572,7 +675,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -610,7 +713,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -646,7 +749,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -682,7 +785,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -723,7 +826,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -762,7 +865,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -785,7 +888,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -806,7 +909,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Blade.push(newSkill);
+    Classes.Blade.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -839,7 +942,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -870,7 +973,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -906,7 +1009,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -943,7 +1046,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -978,7 +1081,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1013,7 +1116,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1051,7 +1154,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1087,7 +1190,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1123,7 +1226,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1164,7 +1267,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1200,7 +1303,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1221,7 +1324,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1242,7 +1345,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shadow.push(newSkill);
+    Classes.Shadow.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1253,7 +1356,7 @@ var Skills =
     
   //// -- Spirit Claw --
     newSkill = new Skill("Spirit Claw", "icon-dummy", 10, 1);
-    newBaseAbility = new Ability(newSkill.name, newSkill.icon, __TARGET_TYPE__);
+    newBaseAbility = new Ability(newSkill.name, "icon-basic-melee", TargetType.MagMissile);
     
     newSkill.baseDescription = newBaseAbility.baseDescription = "Slashes a nearby foe with the claws of a spirit wolf. Can even harm enemies at a distance.";
     newBaseAbility.fatigue = __MANA_COST__;
@@ -1280,7 +1383,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1316,7 +1419,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1352,7 +1455,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1389,7 +1492,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1424,7 +1527,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1459,7 +1562,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1497,7 +1600,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1533,7 +1636,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1569,7 +1672,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1607,7 +1710,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1643,7 +1746,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1666,7 +1769,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1687,7 +1790,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Shaman.push(newSkill);
+    Classes.Shaman.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1698,7 +1801,7 @@ var Skills =
     
   //// -- Firebolt --
     newSkill = new Skill("Firebolt", "icon-dummy", 10, 1);
-    newBaseAbility = new Ability(newSkill.name, newSkill.icon, __TARGET_TYPE__);
+    newBaseAbility = new Ability(newSkill.name, "icon-basic-melee", TargetType.MagMissile);
     
     newSkill.baseDescription = newBaseAbility.baseDescription = "Flings a bolt of fire at a single foe.";
     newBaseAbility.fatigue = __MANA_COST__;
@@ -1725,7 +1828,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1761,7 +1864,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1797,7 +1900,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1834,7 +1937,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1869,7 +1972,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1888,7 +1991,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1928,7 +2031,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -1965,7 +2068,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2001,7 +2104,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2039,7 +2142,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2075,7 +2178,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2096,7 +2199,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2117,7 +2220,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Sorc.push(newSkill);
+    Classes.Sorc.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2153,7 +2256,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2187,7 +2290,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2223,7 +2326,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2244,7 +2347,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2267,7 +2370,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2290,7 +2393,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2332,7 +2435,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2368,7 +2471,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2404,7 +2507,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2442,7 +2545,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2478,7 +2581,7 @@ var Skills =
     // assign
     newSkill.baseAbility = newBaseAbility;
     newSkill.upgradeAbility = newUpgradeAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2499,7 +2602,7 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
@@ -2520,14 +2623,10 @@ var Skills =
     
     // assign
     newSkill.baseAbility = newBaseAbility;
-    Skills.Tinker.push(newSkill);
+    Classes.Tinker.skills.push(newSkill);
     
     // reset
     newSkill = null;
     newBaseAbility = null;
     newUpgradeAbility = null;
 })();
-
-/// ABILITIES
-// Avadon2.Abilities = {};
-

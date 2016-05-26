@@ -1,20 +1,14 @@
 
-/**
- * Global constant MAXPOINTS
- */
-Object.defineProperty(window, 'MAXPOINTS',
-{
-    value: 58,
-    writable: false
-});
 
 /**
- * View state object.
+ * App state object.
  */
 var State =
 {
     pointsSpent: 0,
-    tree: new SkillTree()
+    specPointsSpent: 0,
+    _selectedClass = Classes.Blade,
+    skillTree: new SkillTree()
 }
 // State.pointsAvailable
 Object.defineProperty(State, 'pointsAvailable',
@@ -25,4 +19,33 @@ Object.defineProperty(State, 'pointsAvailable',
     },
     enumerable: true
 });
+// State.specPointsAvailable
+Object.defineProperty(State, 'specPointsAvailable',
+{
+    get: function()
+    {
+        return MAXSPECIALIZATION - State.specPointsSpent;
+    },
+    enumerable: true
+});
+// State.selectedClass
+Object.defineProperty(State, 'selectedClass',
+{
+    get: function()
+    {
+        return State._selectedClass;
+    },
+    set: function(newClass)
+    {
+        State._selectedClass = newClass;
+        State.skillTree.init(newClass);
+        State.pointsSpent = 0;
+    }
+    enumerable: true
+});
+
+State.selectedClass = Classes.Tinker;
+
+// State.skillTree.init(State.selectedClass);
+
 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Avadon 2 Builder</title>
+  <meta charset="utf-8">
+  
+  <link rel="stylesheet" media="screen" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="http://code.jquery.com/jquery.min.js"></script>
+  <!-- <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script> -->
+  <!-- <link rel="stylesheet" media="screen" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.min.css"> -->
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+  
+  
+  
+  <link rel="stylesheet" href="css/style.css">
+  
+</head>
+<body>
+
+  <div id="skill-tree">
+    
+    <div class="tree-node" data-bind="with: treeNode">
+      <div class="relative">
+        <span class="learned level-num" data-bind="text: level, visible: level > 0"></span>
+        <span class="spec level-num" data-bind="text: specMod, visible: specMod > 0"></span>
+        <span class="item level-num" data-bind="text: itemMod, visible: itemMod > 0"></span>
+        <!-- TODO: click binds on the buttons -->
+        <!-- ko ifnot: isSpecNode -->
+        <button class="inc" data-bind="visible: increaseOkay() && nextLevelCost <= $root.pointsAvailable()">+</button>
+        <!-- /ko -->
+        <!-- ko if: isSpecNode -->
+        <button class="inc" data-bind="visible: increaseOkay() && nextLevelCost <= $root.specPointsAvailable()">+</button>
+        <!-- /ko -->
+        <button class="dec" data-bind="visible: decreaseOkay()">-</button>
+      </div>
+    </div>
+    <!-- ko with: tooltipText -->
+    <div class="tooltip" data-bind="css: type">
+      <pre data-bind="text: ko.toJSON($data, null, 4)"></pre>
+    </div>
+    <!-- /ko -->
+    
+  </div>
+  <div id="results">
+    
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+@import url(https://fonts.googleapis.com/css?family=Fondamento);
+/*@import url(https://fonts.googleapis.com/css?family=Quintessential);*/
+
+*
+{
+    box-sizing: border-box;
+}
+
+body
+{
+    margin: 0px;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    background-color: black;
+}
+
+#skill-tree
+{
+    width:  697px;
+    height: 586px;
+    background-image: url("../img/main-bg.png");
+    
+    display: inline-block;
+}
+
+#results
+{
+    width:  440px;
+    height: 467px;
+    background-image: url("../img/temp-results-layout.png");
+    
+    display: inline-block;
+}
+
+.tooltip
+{
+    color: white;
+    /*font: 1.29em Palatino Linotype, FPL Neu, TeX Gyre Pagella, Palatino, Book Antiqua, serif;*/
+    font: bold 1.26em Palatino Linotype, FPL Neu, TeX Gyre Pagella, Palatino, Book Antiqua, serif;
+    line-height: 1;
+    
+    box-sizing: border-box;
+    width: 251px;
+    border: 1px solid #C2C2C2;
+    padding: 10px 19px;
+    background-color: rgba(0,0,0, 0.7);
+}
+*:not(:hover) + .tooltip
+{
+    display: none;
+}
+
+.tooltip p, .skill.tooltip dd
+{
+    line-height: 0.84;
+    margin-top: 0.08em;
+    margin-bottom: 0.08em;
+}
+
+.skill.tooltip dl
+{
+    margin: 0;
+}
+.skill.tooltip dt
+{
+    color: #A9A9FA;
+    /*line-height: 1;*/
+}
+.skill.tooltip dd
+{
+    margin-left: 0.65em;
+}
+
+.tooltip header.name
+{
+    font-weight: normal;
+    line-height: 1;
+    display: block;
+}
+
+.skill.tooltip > p:last-child
+{
+    margin-top: 0.25em;
+    margin-bottom: 0;
+}
+
+.level-num
+{
+    color: #FFDEDE;
+    fill: currentColor;
+}
+.level-num:not(canvas):not(svg)
+{
+    /*shadow outline*/
+    text-shadow: -1px -1px 0 black,  
+                  1px -1px 0 black,
+                 -1px  1px 0 black,
+                  1px  1px 0 black;
+}
+svg.level-num
+{
+    overflow: visible;
+    position: relative;
+}
+
+.tree-rank
+{
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    background-color: #5E2923;
+    text-align: center;
+    
+    border: 4px solid #F7F7F7;
+    border-radius: 1000px;
+}
+.tree-rank > .level-num
+{
+    font-size: 14px;
+    font-weight: bold;
+}
+.tree-rank > canvas.level-num,
+.tree-rank > svg.level-num
+{
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.tree-rank > svg.level-num
+{
+    left: 5px;
+    bottom: 2px;
+}
+
+header.name, .tree-rank > .level-num
+{
+    /*font-family: Matura MT Script Capitals;*/
+    
+    font-family: Fondamento;
+    transform-origin: left;
+    transform: scale(0.9, 1);
+    
+    /*font-family: Quintessential;*/
+}
+
